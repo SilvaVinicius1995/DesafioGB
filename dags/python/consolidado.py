@@ -1,6 +1,6 @@
 # biblioteca
-import sqlalchemy
 import pandas as pd
+import sqlalchemy
 
 ## conexao
 engine = sqlalchemy.create_engine('mysql+pymysql://root:Nebulosa@2022@localhost:3306/DATABASE_CRM')
@@ -32,15 +32,17 @@ order by ANO,MES asc;
 '''
 
 ## Criandos os dataframes
-df_tabela1 = pd.read_sql_query(tabela1,engine)
-df_tabela2 = pd.read_sql_query(tabela2,engine)
-df_tabela3 = pd.read_sql_query(tabela3,engine)
-df_tabela4 = pd.read_sql_query(tabela4,engine)
+df_tabela1 = pd.read_sql_query(tabela1, engine)
+df_tabela2 = pd.read_sql_query(tabela2, engine)
+df_tabela3 = pd.read_sql_query(tabela3, engine)
+df_tabela4 = pd.read_sql_query(tabela4, engine)
+
 
 # função de remover caracteres
 def remove_accents(marca):
     marca = marca.replace('BOTIC�RIO', 'BOTICARIO')
     return marca
+
 
 # limpando caracteres dos dataframes
 
@@ -50,29 +52,29 @@ df_tabela3['MARCA'] = df_tabela3['MARCA'].apply(remove_accents)
 # Salvando dataframes na banco
 
 df_tabela1.to_sql(
-    name = 'CONSOLIDADO_VENDAS_ANO-MES',
-    con = engine,
-    index = False,
-    if_exists ='append'
+    name='CONSOLIDADO_VENDAS_ANO-MES',
+    con=engine,
+    index=False,
+    if_exists='append'
 )
 
 df_tabela2.to_sql(
-    name = 'CONSOLIDADO_VENDAS_MARCA-LINHA',
-    con = engine,
-    index = False,
-    if_exists ='append'
+    name='CONSOLIDADO_VENDAS_MARCA-LINHA',
+    con=engine,
+    index=False,
+    if_exists='append'
 )
 
 df_tabela3.to_sql(
-    name = 'CONSOLIDADO_VENDAS_MARCA-ANO-MES',
-    con = engine,
-    index = False,
-    if_exists ='append'
+    name='CONSOLIDADO_VENDAS_MARCA-ANO-MES',
+    con=engine,
+    index=False,
+    if_exists='append'
 )
 
 df_tabela4.to_sql(
-    name = 'CONSOLIDADO_VENDAS_LINHA-ANO-MES',
-    con = engine,
-    index = False,
-    if_exists ='append'
+    name='CONSOLIDADO_VENDAS_LINHA-ANO-MES',
+    con=engine,
+    index=False,
+    if_exists='append'
 )

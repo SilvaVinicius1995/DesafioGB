@@ -1,0 +1,73 @@
+steps:
+  # Access the id_github file from Secret Manager
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - '-c'
+      - >-
+        gcloud secrets versions access latest --secret=id_rsa >
+        /root/.ssh/id_rsa
+    entrypoint: bash
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+
+  # Set up git with key and domain
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - |
+        chmod 600 /root/.ssh/id_rsa
+        cat <<EOF >/root/.ssh/config
+        Hostname bitbucket.org
+        IdentityFile /root/.ssh/id_rsa
+        EOF
+        ssh-keyscan -t rsa bitbucket.org > /root/.ssh/known_hosts
+    entrypoint: bash
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  # clone repository
+  - name: gcr.io/cloud-builders/git
+    args:
+      - clone
+      - '${_REPOSITORY}'
+      - '-b'
+      - $BRANCH_NAME
+    entrypoint: git
+    volumes:
+      - name: ssh
+        path: /root/.ssh
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - >
+        cd dags;
+        git show $COMMIT_SHA --stat=10000 --diff-filter=d --pretty="format:" | grep "|" | awk -F'|' '{print $1}' | sed -e 's/{.*=>//g' | tr -d ' ' | tr -d '}' | grep -Ev "build|.gitignore"  > /tmp/${_TEMP_FILES} || true
+    id: files
+    entrypoint: bash
+    volumes:
+      - name: temp
+        path: /tmp
+  - name: gcr.io/cloud-builders/gsutil
+    args:
+      - '-c'
+      - |
+        if [ -s /tmp/${_TEMP_FILES} ]
+        then
+          for i in `cat /tmp/${_TEMP_FILES}`
+            do gsutil -m cp $i gs://${_COMPOSER_BUCKET}/$i
+          done
+        else
+          echo "Sem arquivos"
+        fi
+    id: updated_bucket
+    waitFor:
+      - files
+    entrypoint: bash
+    volumes:
+      - name: temp
+        path: /tmp
+substitutions:
+  _TEMP_FILES: files.tmp
+  _REPOSITORY: 'git@github.com:SilvaVinicius1995/DesafioGB.git'
+  _COMPOSER_BUCKET: us-central1-seara-ind-dev-c-014d9168-bucket
