@@ -3,6 +3,7 @@ import pandas as pd
 import tweepy as tw
 import os
 import sqlalchemy
+from airflow.hooks.base import BaseHook
 
 ## lendo arquivo com autenticação
 
@@ -11,7 +12,14 @@ with open('/mnt/c/Users/virodrig/PycharmProjects/pythonProject/dags/python/token
     consumer_secret = tfile.readline().strip('\n')
     access_token = tfile.readline().strip('\n')
     access_token_secret = tfile.readline().strip('\n')
-engine = sqlalchemy.create_engine('mysql+pymysql://root:Nebulosa@2022@localhost:3306/DATABASE_CRM')
+
+conn = BaseHook.get_connection('db_mysql_local')
+conn_string =  str(conn.host)
+password= str(conn.password)
+username= str(conn.login)
+schema= str(conn.schema)
+engineMysql =("mysql+pymysql://"+username+":"+password+"@localhost:3306/"+schema+"")
+engine = sqlalchemy.create_engine(engineMysql)
 
 # selecionando nome da linha com mais vendas no mês 12 de 2019
 sqlQuery = """SELECT MAX(LINHA) as LINHA FROM `CONSOLIDADO_VENDAS_LINHA-ANO-MES` WHERE ANO = 2019 AND MES = 12"""
@@ -27,7 +35,7 @@ api = tw.API(auth)
 query = "boticario", linha
 
 # Collect tweets
-cursor_tweet = tw.Cursor(api.search_tweets,q=query,lang='pt',tweet_mode="extended").items(50)
+cursor_tweet = tw.Cursor(api.search_tweets,q=query,lang='pt',tweet_mode="extended",result_type="recent").items(50)
 
 # criando dicionario
 tweets_dict = {}

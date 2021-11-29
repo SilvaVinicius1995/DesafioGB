@@ -1,9 +1,17 @@
 # biblioteca
 import pandas as pd
 import sqlalchemy
-
+from airflow.hooks.base import BaseHook
+from airflow.hooks.base import BaseHook
 ## conexao
-engine = sqlalchemy.create_engine('mysql+pymysql://root:Nebulosa@2022@localhost:3306/DATABASE_CRM')
+
+conn = BaseHook.get_connection('db_mysql_local')
+conn_string =  str(conn.host)
+password= str(conn.password)
+username= str(conn.login)
+schema= str(conn.schema)
+engineMysql =("mysql+pymysql://"+username+":"+password+"@localhost:3306/"+schema+"")
+engine = sqlalchemy.create_engine(engineMysql)
 
 ##queries
 

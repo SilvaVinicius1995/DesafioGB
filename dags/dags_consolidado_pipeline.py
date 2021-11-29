@@ -1,6 +1,17 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
+from airflow.hooks.base_hook import BaseHook
+
+
+conn = BaseHook.get_connection('db_mysql_local')
+connect = {
+    'conn_string': str(conn.host),
+    'password': str(conn.password),
+    'username': str(conn.login),
+    'schema': str(conn.schema)
+}
+
 
 default_args = {
     'owner': 'airflow',
@@ -15,7 +26,7 @@ with DAG(
     dag_id='consolidado_vendas',
     default_args=default_args,
     schedule_interval=None,
-    start_date=datetime(2021, 11, 30),
+    start_date=datetime(2021, 11, 29),
     template_searchpath='/usr/local/airflow/include',
     catchup=False
 ) as dag:
