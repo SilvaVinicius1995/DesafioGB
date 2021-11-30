@@ -25,7 +25,8 @@ engine = sqlalchemy.create_engine(engineMysql)
 sqlQuery = """SELECT LINHA FROM `CONSOLIDADO_VENDAS_LINHA-ANO-MES` 
 WHERE QTD_VENDA = 
 (SELECT MAX(QTD_VENDA) FROM `CONSOLIDADO_VENDAS_LINHA-ANO-MES` 
-WHERE ANO = 2019 AND MES = 12)"""
+WHERE ANO = 2019 AND MES = 12)
+AND ANO = 2019 AND MES = 12"""
 
 df_query = pd.read_sql_query(sqlQuery,engine)
 linha = df_query['LINHA'].values[0]
